@@ -9,8 +9,12 @@ app.use(cors())
 app.use(express.json())
 
 /* =============================== Routes ================================ */
-app.get('/api', (req, res) => {
+app.get('/', (req, res) => {
   res.send('server running well')
+})
+/* =============================== Routes ================================ */
+app.get('/api', (req, res) => {
+  res.send('api route hit')
 })
 app.use('/api/quran', quranRoutes)
 
