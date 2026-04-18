@@ -23,52 +23,56 @@ export const fetchSurahs = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch surahs' })
   }
 }
-
-/* =============================== quran.controller.js ================================ */
+/* =============================== Ayahs ================================ */
 export const fetchSurahAyahs = async (req, res) => {
   try {
-    const { id } = req.params;
-    // .trim() removes spaces. If result is "", it becomes falsy.
-    const query = req.query.q?.trim().toLowerCase(); 
+    const { id } = req.params
+    const ayahs = await getSurahAyahs(id)
+    res.json(ayahs)
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch ayahs' })
+  }
+}
 
-    const data = await getSurahAyahs(id);
+
+
+
+/* =============================== SINGLE SURAH SEARCH ================================ */
+export const searchAyahsBySurah = async (req, res) => {
+  try {
+    const { id } = req.params
+    const query = req.query.q?.toLowerCase()
+
+    if (!query) {
+      return res.status(400).json({ message: 'Query required' })
+    }
+
+    const data = await getSurahAyahs(id)
 
     if (!data || !data[0] || !data[1]) {
-      return res.status(404).json({ message: "Surah not found" });
+      return res.status(404).json({ message: 'Surah not found' })
     }
 
-    /* ================= SEARCH MODE ================= */
-    // Change: Check if query exists AND has length
-    if (query && query.length > 0) {
-      const arabic = data[0].ayahs;
-      const english = data[1].ayahs;
+    const arabic = data[0].ayahs
+    const english = data[1].ayahs
 
-      const results = english
-        .map((ayah, i) => ({
-          arabic: arabic[i]?.text,
-          translation: ayah.text,
-          number: ayah.numberInSurah,
-        }))
-        .filter((ayah) =>
-          ayah.translation?.toLowerCase().includes(query)
-        );
+    const results = english
+      .map((ayah, i) => ({
+        arabic: arabic[i]?.text,
+        translation: ayah.text,
+        number: ayah.numberInSurah,
+      }))
+      .filter((ayah) =>
+        ayah.translation?.toLowerCase().includes(query)
+      )
 
-      return res.json({
-        mode: "search",
-        total: results.length,
-        data: results,
-      });
-    }
-
-    /* ================= NORMAL MODE ================= */
-    // If query is empty (""), return the full surah
-    return res.json({
-      mode: "full",
-      data: data,
-    });
-
+    res.json({
+      surah: id,
+      total: results.length,
+      data: results,
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to fetch ayahs" });
+    console.error('🔥 SEARCH ERROR:', error)
+    res.status(500).json({ message: 'Search failed' })
   }
-};
+}
