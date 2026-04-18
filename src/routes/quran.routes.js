@@ -8,4 +8,5 @@ const router = express.Router()
 router.get('/surahs', fetchSurahs)
 router.get('/surah/:id', fetchSurahAyahs)
 
+
 export default router
